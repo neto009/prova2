@@ -1,20 +1,25 @@
-import { useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, View, StatusBar, FlatList, Image } from 'react-native';
+import { useState } from 'react';
+import { StyleSheet, ActivityIndicator, Text, View, StatusBar, TextInput, Button, Image } from 'react-native';
 
 export default function App() {
 
-  const [list, setList] = useState([])
-
-  useEffect(() => {
-    loadData();
-  }, [])
+  const [data, setData] = useState();
+  const [data2, setData2] = useState();
+  const [url, setUrl] = useState();
+  const [enviado, setEnviado] = useState(false);
+  const [buscou, setBuscou] = useState(false);
 
   const loadData = () =>{
-    fetch("https://valorant-api.com/v1/playercards")
+    setEnviado(true);
+    console.log("https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY&date="+data)
+    fetch("https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY&date="+data)
       .then(res => res.json())
       .then(res => {
-        var data = res.data
-        setList(data)
+        setUrl(res.url)
+        console.log(url)
+        if(url != "undefined"){
+          setBuscou(true)
+        }
       })
       .catch(error => {
         console.log(error)
@@ -22,9 +27,13 @@ export default function App() {
 
   }
 
+  const back =() => {
+    setEnviado(false)
+  }
+
 
   return (
-    <SafeAreaView>
+    <View>
       <StatusBar
         barStyle = "ligh-content"
         hidden = {false}
@@ -35,61 +44,71 @@ export default function App() {
     <View style={styles.container}>
     <View>
       <Text style={styles.title}>
-        VALORANT
+        BUSCADOR DE IMAGEM NASA!
       </Text>
     </View>
-    <FlatList
-        data={list}
-        numColumns={2}
-        pagingEnabled
-        keyExtractor={(item, index) => item.uuid}
-        renderItem={({item}) => 
-        <View style={styles.cards}>
-          <Text style={styles.cardText}>{item.displayName}</Text>
-          <Image
-            style={{width: 100, height: 100}}
-            source={{uri: item.smallArt}}/>
+    {!enviado ? (
+        <>
+          <TextInput
+            style={styles.box}
+            onChangeText={texto => setData(texto)}
+            value={data}
+          />
+        <View style={styles.buttons}>
+          <Button
+              title="Buscar"
+              onPress={() => {
+                loadData();
+              }}
+            />
         </View>
-        }
-      />
+        </>
+      ) : !buscou ? (
+        <ActivityIndicator size="large" />
+      ) : (
+        <View>
+          <View style={styles.buttons}>
+            <Button
+                title="Voltar"
+                onPress={() => {
+                  back();
+                }}
+              />
+          </View>
+          <Image
+            style={{width: "100%", height: "83%"}}
+            resizeMode='contain'
+            source={{uri: url}}
+            />
+          </View>
+      )}
     </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#084d6e',
     justifyContent: 'center',
   },
-  MainContainer :{
-    justifyContent: 'center',
-    alignItems:'center',
-    flex:1,
-  },
-  cards: {
-    flex: 1, 
-    margin: 10,
-    justifyContent: 'center',
-    alignItems:'center',
-    backgroundColor: '#FFEFD5',
-    paddingBottom: 15,
-    borderRadius: 12
-  },
-  cardText: {
-    padding: 5,
-    color: '#2c2c2c',
-    fontWeight: 'bold'
+  box: { 
+    height: 40,
+    margin: 12,
+    borderWidth: 1,
+    padding: 10,
   },
   title: {
     padding: 5,
     color: '#4682B4',
     fontWeight: 'bold',
-    fontSize: 30,
+    fontSize: 20,
     textAlign: 'center',
     backgroundColor: '#E6E6FA',
     borderBottomLeftRadius: 25,
     borderBottomRightRadius: 25
+  },
+  buttons: {
+    margin: 20
   }
 
 });
